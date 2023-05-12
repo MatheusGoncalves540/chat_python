@@ -2,7 +2,6 @@ import sqlalchemy
 from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy import Column, Integer, String, TIMESTAMP
 from datetime import datetime
-import time 
 
 #conectando com o banco de dados
 database = sqlalchemy.create_engine('sqlite:///db.db', echo=True)
@@ -29,7 +28,6 @@ session = sessionmaker(bind=database)()
 session.add(enzo)
 session.add(User(name='Rubrivira',mensagem='Josiane Rubrivira',horario=datetime.now()))
 session.commit()
-time.sleep(2)
 #adicionando varios objetos
 session.add_all([
     User(name='Valentina',mensagem='Maria Valentina',horario=datetime.now()),
