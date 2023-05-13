@@ -1,0 +1,4 @@
+- Criar uma sala para cada nova interacao, pense em interacao cada vez que um novo cliente se conectar
+- Assim que o cliente se conectar perguntar o nome e cadastrar
+- Na funcao adicional permitir /getroom all ou /getroom 100
+- permitir o cliente remover a ultima mensagem conversa quando ele quiser
