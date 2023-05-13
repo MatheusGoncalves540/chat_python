@@ -2,16 +2,11 @@ import socket
 import sqlalchemy
 from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy import Column, Integer, String, TIMESTAMP
-from datetime import datetime
+import datetime
+import json
 
-#conectando com o banco de dados
-try: 
-    database = sqlalchemy.create_engine('sqlite:///db.db', echo=True)
-    declarativeBase = declarative_base()
-    print('Conectado com sucesso ao banco!')
-except:
-    print('Falha ao conectar ao banco...')
-    exit()
+database = sqlalchemy.create_engine('sqlite:///db.db', echo=True)
+declarativeBase = declarative_base()
 
 #classe de usuario
 class User(declarativeBase):
@@ -24,21 +19,31 @@ class User(declarativeBase):
 
 declarativeBase.metadata.create_all(database)
 
-
 servidor = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 servidor.bind(('localhost', 8080))
 
 servidor.listen()
 cliente, end = servidor.accept()
 
-username = input('Digite seu nome: ')
+username = "SERVER"
 
 while True:
-    msg = cliente.recv(10240).decode('utf-8')
-    print(msg)
-    msg_env = input('Mensagem: ')
-    session = sessionmaker(bind=database)()
-    session.add(User(name=username,mensagem=msg_env,horario=datetime.now()))
-    session.commit()
-    session.close()
+    #recebendo msg do cliente
+    msg = json.loads(cliente.recv(10240).decode('utf-8'))
+    print(f"{msg['name']}: {msg['msg']}, Horário: {msg['hora']}")
+    print(datetime.datetime.strptime(msg['hora'],'%Y-%m-%d %H:%M:%S.%f'))
+
+    #enviando msg pro cliente
+    server_input = input('Resposta: ')
+    msg_env = '{' + f''' "name":"{username}",
+               "msg":"{server_input}",
+               "hora":"{datetime.now()}"
+               ''' + '}'
     cliente.send(msg_env.encode('utf-8'))
+    
+    #adicionando no banco]
+    session = sessionmaker(bind=database)()
+    session.add(User(name=msg['name'],mensagem=msg['msg'],horario= datetime.datetime.strptime(msg['hora'],'%Y-%m-%d %H:%M:%S.%f')))
+    session.add(User(name=username,mensagem=msg_env,horario=datetime.datetime.now()))
+    
+    session.commit()
