@@ -18,5 +18,5 @@ while True:
     cliente.send(str(msg_env).encode('utf-8'))
     #recebendo msg
     msg = loads(cliente.recv(10240).decode('utf-8'))
-    print(msg)
+    print(f"{msg['name']}: {msg['msg']}, Horário: {msg['hora']}")
     

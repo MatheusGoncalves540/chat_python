@@ -44,6 +44,6 @@ while True:
     #adicionando no banco]
     session = sessionmaker(bind=database)()
     session.add(User(name=msg['name'],mensagem=msg['msg'],horario= datetime.datetime.strptime(msg['hora'],'%Y-%m-%d %H:%M:%S.%f')))
-    session.add(User(name=username,mensagem=msg_env,horario=datetime.datetime.now()))
+    session.add(User(name=username,mensagem=server_input,horario=datetime.datetime.now()))
     
     session.commit()
