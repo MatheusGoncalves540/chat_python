@@ -15,7 +15,11 @@ while True:
                "msg":"{usr_input}",
                "hora":"{datetime.now()}"
                ''' + '}'
-    cliente.send(str(msg_env).encode('utf-8'))
+    try:
+        cliente.send(str(msg_env).encode('utf-8'))
+    except:
+        input('Conexão com o servidor, perdida...')
+        break
     #recebendo msg
     msg = loads(cliente.recv(10240).decode('utf-8'))
     print(f"{msg['name']}: {msg['msg']}, Horário: {msg['hora']}")
