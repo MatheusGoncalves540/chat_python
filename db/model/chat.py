@@ -1,0 +1,1 @@
+# Aqui deve ser colocado o codigo da tabela chat
