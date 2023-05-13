@@ -37,7 +37,7 @@ while True:
     server_input = input('Resposta: ')
     msg_env = '{' + f''' "name":"{username}",
                "msg":"{server_input}",
-               "hora":"{datetime.now()}"
+               "hora":"{datetime.datetime.now()}"
                ''' + '}'
     cliente.send(msg_env.encode('utf-8'))
     
