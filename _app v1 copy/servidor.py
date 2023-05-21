@@ -1,7 +1,7 @@
 import socket
 import sqlalchemy
 from sqlalchemy.orm import declarative_base, sessionmaker
-from sqlalchemy import Column, Integer, String, TIMESTAMP
+from sqlalchemy import Column, Integer, String, TIMESTAMP, or_, asc
 import datetime
 import json
 from threading import Thread
@@ -12,7 +12,7 @@ declarativeBase = declarative_base()
 session = sessionmaker(bind=database)()
 
 #classe de usuario
-class User(declarativeBase):
+class Mensagens(declarativeBase):
     __tablename__ = f'mensagens' #obrigatório
 
     id = Column(Integer, primary_key=True) #obrigatório
@@ -42,20 +42,27 @@ def enviar():
         msg_env_json = json.loads(msg_env)
         cliente.send(msg_env.encode('utf-8'))
          # SALVA NO BANCO
-        session.add(User(name=msg_env_json['name'],mensagem=msg_env_json['msg'],horario=datetime.datetime.strptime(msg_env_json['hora'],'%Y-%m-%d %H:%M:%S.%f'),destinatario=msg_env_json['destinatario']))
+        session.add(Mensagens(name=msg_env_json['name'],mensagem=msg_env_json['msg'],horario=datetime.datetime.strptime(msg_env_json['hora'],'%Y-%m-%d %H:%M:%S.%f'),destinatario=msg_env_json['destinatario']))
         session.commit()
         
 def receber():
     while True:
-        msg = json.loads(cliente.recv(10240).decode('utf-8'))
-        print(f"{msg['name']}: {msg['msg']}, Horário: {msg['hora']}")
-        # cliente.send(msg.encode('utf-8'))
-        # SALVA NO BANCO
-        session.add(User(name=msg['name'],mensagem=msg['msg'],horario=datetime.datetime.strptime(msg['hora'],'%Y-%m-%d %H:%M:%S.%f'),destinatario=msg['destinatario']))
-        session.commit()
-
-
-
+        msg = cliente.recv(10240).decode('utf-8')
+        try:
+            msg_json = json.loads(msg)
+            print(f"{msg_json['name']}: {msg_json['msg']} - Horário: {msg_json['hora']}")
+            session.add(Mensagens(name=msg_json['name'],mensagem=msg_json['msg'],horario=datetime.datetime.strptime(msg_json['hora'],'%Y-%m-%d %H:%M:%S.%f'),destinatario=msg_json['destinatario']))
+            session.commit()
+        except:
+            if msg != None:
+                nova_conexao = msg.split('%&-:%')
+                if nova_conexao != []:
+                    print('nova conexão, carregando mensagens:',nova_conexao)
+                    msgs_passadas =  f"['{nova_conexao[0]}'"
+                    for mensagem in session.query(Mensagens).filter(or_(Mensagens.name == f'{nova_conexao[0]}', Mensagens.name == f'{nova_conexao[1]}'), or_(Mensagens.destinatario == f'{nova_conexao[0]}', Mensagens.destinatario == f'{nova_conexao[1]}')).order_by(asc(Mensagens.horario)):
+                        msgs_passadas = msgs_passadas + f",'{mensagem.name}: {mensagem.mensagem} - Horário: {mensagem.horario}'"
+                    msgs_passadas = msgs_passadas + ']'
+                    cliente.send(msgs_passadas.encode('utf-8'))
 
 thread_receber = Thread(target=receber) #CRIA EM MEMORIA
 thread_enviar = Thread(target=enviar)
@@ -65,25 +72,3 @@ thread_enviar.start()
 
 thread_receber.join() # MANDA RODAR
 thread_enviar.join()
-
-# while True:
-#     #recebendo msg do cliente
-#     # cliente.setblocking(False)
-#     # msg = json.loads(cliente.recv(10240).decode('utf-8'))
-#     # print(f"{msg['name']}: {msg['msg']}, Horário: {msg['hora']}")
-#     # print(datetime.datetime.strptime(msg['hora'],'%Y-%m-%d %H:%M:%S.%f'))
-    
-#     #enviando msg pro cliente
-#     server_input = input('Resposta: ')
-#     msg_env = '{' + f''' "name":"{username}",
-#                "msg":"{server_input}",
-#                "hora":"{datetime.datetime.now()}"
-#                ''' + '}'
-#     cliente.send(msg_env.encode('utf-8'))
-    
-#     # #adicionando no banco]
-#     # 
-#     # s
-#     # session.add(User(name=username,mensagem=server_input,horario=datetime.datetime.now()))
-    
-#     # session.commit()
