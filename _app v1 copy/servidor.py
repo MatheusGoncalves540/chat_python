@@ -7,7 +7,7 @@ import json
 from threading import Thread
 
 #banco de dados
-database = sqlalchemy.create_engine('sqlite:///_app v1 copy/db.db', echo=True)
+database = sqlalchemy.create_engine('sqlite:///_app v1 copy/db.db', echo=False)
 declarativeBase = declarative_base()
 session = sessionmaker(bind=database)()
 

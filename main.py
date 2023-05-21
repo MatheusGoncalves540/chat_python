@@ -1,8 +1,5 @@
-# Aqui você irá chamar o servidor e qualquer outro arquivo
+import app.cliente.main
+#from app.server.main import startServer
 
-
-from app.db.connection import database
-from app.server.main import startServer
-
-
-startServer()
+app.cliente.main.initCliente()
+#startServer()
